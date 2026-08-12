@@ -53,7 +53,23 @@ npm run dev
 
 ---
 
-## 🌟 Special Thanks
-Special thanks to **Manus AI** for the mobile optimization and iSH compatibility fixes.
+## 🌟 Special Thanks & Core Attributions
+
+We are immensely grateful to the following cutting-edge AI systems, advanced language models, and developer ecosystems for their exceptional design synthesis, code generation, and diagnostic assistance during the development of this engine:
+
+*   **Gemini** (Google DeepMind)
+*   **DeepSeek**
+*   **ChatGPT** (OpenAI)
+*   **Claude** (Anthropic)
+*   **Grok** (xAI)
+*   **Kimi** (Moonshot)
+*   **Manus**
+*   **GitHub Copilot**
+*   **Codeium**
+*   **Tabnine**
+*   **StarCoder**
+*   **CodeLlama**
+
+---
 
 *Developed with ❤️ to protect and fortify web infrastructures globally.*
