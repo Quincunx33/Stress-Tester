@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+# Sitemap Location
+Sitemap: https://pipeline-stress-tester.onrender.com/sitemap.xml

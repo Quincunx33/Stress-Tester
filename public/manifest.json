@@ -1,0 +1,24 @@
+{
+  "short_name": "XIO Stress",
+  "name": "XIO Stress Tester Engine",
+  "description": "High-Performance HTTP Pipelining & Load Benchmark Engine",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#0A0A0A",
+  "theme_color": "#0A0A0A",
+  "display": "standalone",
+  "orientation": "any"
+}

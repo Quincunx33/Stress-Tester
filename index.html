@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- SEO Meta Tags -->
+    <title>XIO Stress Tester | High-Performance HTTP Pipelining & Load Benchmark Engine</title>
+    <meta name="description" content="XIO Stress Tester is an ultra-fast, high-performance HTTP/1.1 and HTTP/2 load generator. Benchmark servers, analyze TTLB, test WAF bypasses, and measure circuit breaker threshold limits under realistic stress conditions." />
+    <meta name="keywords" content="stress tester, load tester, http pipelining, benchmark engine, server load testing, http2 stress test, ddos simulation, circuit breaker testing, web performance benchmark, waf bypass test, xio stress tester" />
+    <meta name="author" content="Quincunx33" />
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+    <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large" />
+    <meta name="theme-color" content="#0A0A0A" />
+    <meta name="rating" content="General" />
+    <meta name="distribution" content="Global" />
+    
+    <!-- Dublin Core Metadata for Standardized Indexes -->
+    <meta name="dc.title" content="XIO Stress Tester | High-Performance HTTP Load Benchmark Engine" />
+    <meta name="dc.creator" content="Quincunx33" />
+    <meta name="dc.description" content="XIO Stress Tester is an ultra-fast, high-performance HTTP/1.1 and HTTP/2 load generator. Benchmark servers, analyze TTLB, test WAF bypasses, and measure circuit breaker threshold limits under realistic stress conditions." />
+    <meta name="dc.subject" content="High-Performance HTTP Load Benchmark Engine" />
+    <meta name="dc.language" content="en" />
+    
+    <!-- Canonical Link -->
+    <link rel="canonical" href="https://pipeline-stress-tester.onrender.com/" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://pipeline-stress-tester.onrender.com/" />
+    <meta property="og:title" content="XIO Stress Tester - High-Performance HTTP Load Benchmark Engine" />
+    <meta property="og:description" content="Simulate real-world high-concurrency traffic with HTTP/1.1 pipelining & HTTP/2 support. Features custom security payloads, WAF bypass probes, and live analytics dashboards." />
+    <meta property="og:image" content="https://pipeline-stress-tester.onrender.com/og-image.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:site_name" content="XIO Stress Tester" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:image:alt" content="XIO Stress Tester Analytics Dashboard Interface" />
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://pipeline-stress-tester.onrender.com/" />
+    <meta name="twitter:title" content="XIO Stress Tester | HTTP load generation & benchmarking" />
+    <meta name="twitter:description" content="Analyze server limits under high-volume pipelined HTTP streams with real-time throughput dashboards." />
+    <meta name="twitter:image" content="https://pipeline-stress-tester.onrender.com/og-image.jpg" />
+    <meta name="twitter:image:alt" content="XIO Stress Tester Analytics Dashboard Interface" />
+
+    <!-- Google Structured Data / JSON-LD Schema (SoftwareApplication Schema) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "XIO Stress Tester",
+      "operatingSystem": "All",
+      "applicationCategory": "DeveloperApplication",
+      "applicationSubCategory": "Network Load Testing and Benchmarking Engine",
+      "description": "An ultra-fast, high-performance HTTP/1.1 pipelining and HTTP/2 connection pooling stress testing tool with real-time diagnostics and circuit breaker visualization.",
+      "offers": {
+        "@type": "Offer",
+        "price": "0.00",
+        "priceCurrency": "USD"
+      },
+      "author": {
+        "@type": "Person",
+        "name": "Quincunx33",
+        "url": "https://github.com/Quincunx33"
+      },
+      "softwareVersion": "1.0.0",
+      "downloadUrl": "https://github.com/Quincunx33/Pipeline-Stress-Tester",
+      "featureList": [
+        "High-performance HTTP/1.1 Pipelining",
+        "HTTP/2 connection pooling & multi-stream tests",
+        "WAF Bypass probe payloads",
+        "Circuit Breaker failure simulations",
+        "Real-time SSE-stream metrics visualization",
+        "Local PWA support for offline metrics view"
+      ]
+    }
+    </script>
+
+    <!-- Favicon & PWA App Icons -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
+    
+    <!-- PWA Web App Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+    
+    <!-- Theme & Standalone Display Meta Tags -->
+    <meta name="theme-color" content="#0A0A0A" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="XIO Stress" />
+    <meta name="mobile-web-app-capable" content="yes" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then((reg) => console.log('Service Worker registered successfully:', reg.scope))
+            .catch((err) => console.error('Service Worker registration failed:', err));
+        });
+      }
+    </script>
+  </body>
+</html>
+
