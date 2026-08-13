@@ -1,10 +1,4 @@
 import express from "express";
-import { AbortController } from "abort-controller";
-// Polyfill for Node.js < 15
-if (typeof global.AbortController === "undefined") {
-  (global as any).AbortController = AbortController;
-}
-
 import path from "path";
 import http from "http";
 import https from "https";
@@ -12,8 +6,7 @@ import http2 from "http2";
 import os from "os";
 import cluster from "cluster";
 import { request as http3Request } from "./node-http3";
-// Vite will be dynamically imported only in development mode
-
+import { createServer as createViteServer } from "vite";
 import { RealProxyPool as ProxyPool } from "./proxy-manager";
 import { SECURITY_PAYLOADS, SecurityStats, getObfuscatedPayload, getPayloadsByCategory } from "./src/security-payloads";
 import { generateRandomHeaders, generateRandomFingerprint, obfuscatePayload, generateSearchQuery, calculateRandomDelay } from "./src/header-randomizer";
@@ -1364,14 +1357,13 @@ if (!isPrimaryProcess) {
 
   async function startServer() {
     if (process.env.NODE_ENV !== "production") {
-      const { createServer: createViteServer } = await import("vite");
       const vite = await createViteServer({
         server: { middlewareMode: true },
         appType: "spa",
       });
       app.use(vite.middlewares);
     } else {
-      const distPath = path.resolve(__dirname, "dist");
+      const distPath = path.join(process.cwd(), "dist");
       app.use(express.static(distPath));
       app.get("*", (req, res) => {
         res.sendFile(path.join(distPath, "index.html"));
