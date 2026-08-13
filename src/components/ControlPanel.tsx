@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Play, Square, Sliders, Globe, Zap, Shield, RefreshCw } from 'lucide-react';
-import { TestConfig, PresetTarget } from '../types';
+import { TestConfig } from '../types';
 
 interface ControlPanelProps {
   config: TestConfig;
@@ -19,45 +19,10 @@ export function ControlPanel({
   onStop,
   onRequireDisclaimer
 }: ControlPanelProps) {
-  const [presets, setPresets] = useState<PresetTarget[]>([]);
-
-  useEffect(() => {
-    fetch('/api/presets')
-      .then(res => res.json())
-      .then(data => {
-        if (data.presets) setPresets(data.presets);
-        else if (Array.isArray(data)) setPresets(data);
-      })
-      .catch(() => {});
-  }, []);
-
   const handleChange = (field: keyof TestConfig, value: any) => {
     onChangeConfig({
       ...config,
       [field]: value
-    });
-  };
-
-  const handlePresetSelect = (preset: PresetTarget) => {
-    onChangeConfig({
-      target: preset.url,
-      duration: preset.duration,
-      pipelines: preset.pipelines,
-      pipeliningFactor: preset.factor,
-      protocol: 'http/1.1',
-      pattern: 'flat',
-      bypassCloudflare: true,
-      httpMethod: 'GET',
-      methodMix: { GET: 70, POST: 20, PUT: 5, DELETE: 5 },
-      payload: '',
-      dynamicPayloadEnabled: false,
-      customHeadersRaw: '',
-      customHeaders: {},
-      thinkTimeMs: 0,
-      jitterMs: 0,
-      adaptiveThinkTimeEnabled: false,
-      adaptivePacingFactor: 1.5,
-      circuitBreakerEnabled: true
     });
   };
 
@@ -80,44 +45,18 @@ export function ControlPanel({
         
         {/* Single Universal Target Input Box */}
         <div className="col-span-1 sm:col-span-2 lg:col-span-2 space-y-2">
-          <div className="flex items-center justify-between">
-            <label className="text-xs font-bold uppercase tracking-widest text-[#0A0A0A] flex items-center space-x-1.5">
-              <Globe className="w-3.5 h-3.5" />
-              <span>Target (URL or IP:Port)</span>
-            </label>
-            <span className="text-[10px] font-mono text-slate-500 font-bold uppercase">
-              e.g. 192.168.1.1:8080 or https://site.com
-            </span>
-          </div>
+          <label className="text-xs font-bold uppercase tracking-widest text-[#0A0A0A] flex items-center space-x-1.5">
+            <Globe className="w-3.5 h-3.5" />
+            <span>Target (URL or IP:Port)</span>
+          </label>
           <input
             type="text"
             disabled={isRunning}
             value={config.target}
             onChange={(e) => handleChange('target', e.target.value)}
-            placeholder="http://domain.com or 192.168.1.1:8080"
+            placeholder="http://target.com or 192.168.1.1:8080"
             className="w-full bg-[#FDFDFD] border-2 border-[#0A0A0A] px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-mono font-bold text-[#0A0A0A] placeholder-slate-400 focus:outline-none focus:bg-white transition-colors disabled:opacity-50"
           />
-
-          {presets.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 pt-1.5">
-              <span className="text-[10px] font-bold uppercase text-[#0A0A0A]/60 self-center">Quick Targets:</span>
-              {presets.map((preset, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  disabled={isRunning}
-                  onClick={() => handlePresetSelect(preset)}
-                  className={`px-2 py-0.5 text-[10px] font-mono font-bold transition-all border ${
-                    config.target === preset.url
-                      ? 'bg-[#0A0A0A] text-white border-[#0A0A0A]'
-                      : 'bg-white text-[#0A0A0A] border-[#0A0A0A]/40 hover:border-[#0A0A0A] hover:bg-slate-50'
-                  } disabled:opacity-50 disabled:pointer-events-none`}
-                >
-                  {preset.name}
-                </button>
-              ))}
-            </div>
-          )}
         </div>
 
         
