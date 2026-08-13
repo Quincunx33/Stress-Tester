@@ -122,6 +122,7 @@ export interface TestState {
   coordinatedOmissionMs?: number;
   statusCodes?: Record<string, number>;
   proxyStats?: ProxyStats;
+  fingerprint?: ServerFingerprint | null;
   testMode?: string;
   testIntensity?: number;
   payloadType?: string;
@@ -137,3 +138,63 @@ export interface PresetTarget {
   duration: number;
   factor: number;
 }
+
+export interface SecurityHeaderCheck {
+  name: string;
+  header: string;
+  present: boolean;
+  value?: string;
+  recommendation: string;
+}
+
+export interface TlsCertificateInfo {
+  valid: boolean;
+  subject?: string;
+  issuer?: string;
+  validFrom?: string;
+  validTo?: string;
+  daysRemaining?: number;
+  protocol?: string;
+  cipher?: string;
+  authorized?: boolean;
+  authorizationError?: string;
+}
+
+export interface ServerFingerprint {
+  target: string;
+  normalizedUrl: string;
+  ip: string;
+  ipv6?: string;
+  hostname: string;
+  reverseDns?: string;
+  cloudProvider?: string;
+  asnName?: string;
+  statusCode: number;
+  statusMessage: string;
+  responseTimeMs: number;
+  serverSoftware: string;
+  serverVersion?: string;
+  operatingSystem?: string;
+  programmingLanguage?: string;
+  framework?: string;
+  cms?: string;
+  wafOrCdn: string;
+  wafConfidence: 'HIGH' | 'MEDIUM' | 'LOW' | 'NONE';
+  wafDetails?: string[];
+  supportedProtocols: string[];
+  hasHttp2: boolean;
+  hasHttp3: boolean;
+  http3AltSvc?: string;
+  tlsInfo?: TlsCertificateInfo;
+  securityHeadersScore: {
+    grade: 'A+' | 'A' | 'B' | 'C' | 'D' | 'F';
+    score: number;
+    passed: number;
+    total: number;
+    checks: SecurityHeaderCheck[];
+  };
+  cookies: string[];
+  rawHeaders: Record<string, string>;
+  inspectedAt: string;
+}
+

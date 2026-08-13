@@ -1,6 +1,5 @@
 import express from "express";
 import path from "path";
-import fs from "fs";
 import http from "http";
 import https from "https";
 import http2 from "http2";
@@ -11,6 +10,8 @@ import { createServer as createViteServer } from "vite";
 import { RealProxyPool as ProxyPool } from "./proxy-manager";
 import { SECURITY_PAYLOADS, SecurityStats, getObfuscatedPayload, getPayloadsByCategory } from "./src/security-payloads";
 import { generateRandomHeaders, generateRandomFingerprint, obfuscatePayload, generateSearchQuery, calculateRandomDelay } from "./src/header-randomizer";
+import { performTargetRecon } from "./server-recon";
+import { ServerFingerprint } from "./src/types";
 
 
 // ==========================================
@@ -140,6 +141,7 @@ export interface TestState {
   statusCodes?: Record<string, number>;
   proxyStats?: ProxyStats;
   proxyConfig?: ProxyConfig;
+  fingerprint?: ServerFingerprint | null;
   testMode?: string;
   testIntensity?: number;
   payloadType?: string;
@@ -164,7 +166,7 @@ const PRESET_TARGETS = [
   { name: "Cloudflare Speed Test", url: "https://speed.cloudflare.com/__down?bytes=1000", pipelines: 20, duration: 30, factor: 10 }
 ];
 
-const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
+const PORT = 3000;
 const isPrimaryProcess = cluster.isPrimary || (cluster as any).isMaster;
 
 // ==========================================
@@ -800,9 +802,8 @@ if (!isPrimaryProcess) {
   const app = express();
   app.use(express.json({ limit: "5mb" }));
 
-  // Fork Cluster Workers (respect WEB_CONCURRENCY on PaaS / Render to prevent OOM)
-  const envConcurrency = process.env.WEB_CONCURRENCY ? parseInt(process.env.WEB_CONCURRENCY, 10) : undefined;
-  const cpuCores = Math.max(1, Math.min(envConcurrency || (process.env.NODE_ENV === 'production' ? Math.min(os.cpus().length || 1, 4) : 2), 8));
+  // Fork Cluster Workers
+  const cpuCores = Math.max(1, os.cpus().length || 4);
   const workers: Record<number, any> = {};
 
   console.log(`[Primary Process PID ${process.pid}] Forking ${cpuCores} Cluster Workers for high-throughput load generation...`);
@@ -1169,6 +1170,31 @@ if (!isPrimaryProcess) {
     res.json(PRESET_TARGETS);
   });
 
+  // Target Server Fingerprinting & Reconnaissance Endpoint
+  app.all("/api/recon", async (req, res) => {
+    try {
+      const target = (req.body?.target || req.query?.target || req.body?.url || req.query?.url) as string;
+      if (!target || typeof target !== "string" || !target.trim()) {
+        return res.status(400).json({ error: "Target URL or hostname is required for server inspection." });
+      }
+
+      const fingerprint = await performTargetRecon(target);
+
+      // Also log fingerprint to active test console for real-time observability
+      activeTest.logs.unshift({
+        time: new Date().toLocaleTimeString(),
+        level: "INFO",
+        message: `[Recon Engine] Identified target: ${fingerprint.hostname} (${fingerprint.ip}) -> Server: ${fingerprint.serverSoftware}${fingerprint.serverVersion ? ' ' + fingerprint.serverVersion : ''} | WAF/CDN: ${fingerprint.wafOrCdn} | Security Grade: ${fingerprint.securityHeadersScore.grade}`
+      });
+      if (activeTest.logs.length > 50) activeTest.logs.pop();
+
+      res.json({ success: true, fingerprint });
+    } catch (err: any) {
+      console.error("[Recon Error]", err);
+      res.status(500).json({ error: err.message || "Failed to inspect target server" });
+    }
+  });
+
   // Current Test Status
   app.get("/api/test/status", (req, res) => {
     res.json(activeTest);
@@ -1313,8 +1339,25 @@ if (!isPrimaryProcess) {
         { time: new Date().toLocaleTimeString(), level: "INFO", message: `[Cluster Engine (${cpuCores} CPU Cores)] Load generation cluster launched against ${formattedTarget}` },
         { time: new Date().toLocaleTimeString(), level: "INFO", message: `Method: ${selectedMethodUpper} | Protocol: ${selectedProtocolLower.toUpperCase()} | Pipelines: ${numPipelines} (x${numFactor} burst)` }
       ],
-      history: []
+      history: [],
+      fingerprint: null
     };
+
+    // Automatically perform background Server Reconnaissance if not already inspected
+    performTargetRecon(formattedTarget).then((fp) => {
+      if (activeTest) {
+        activeTest.fingerprint = fp;
+        activeTest.logs.unshift({
+          time: new Date().toLocaleTimeString(),
+          level: "SUCCESS",
+          message: `[Auto Recon] Target Identified: ${fp.serverSoftware} | WAF: ${fp.wafOrCdn} | IP: ${fp.ip} | Grade: ${fp.securityHeadersScore?.grade || 'N/A'}`
+        });
+        if (activeTest.logs.length > 50) activeTest.logs.pop();
+        broadcastSSE(activeTest);
+      }
+    }).catch((err) => {
+      console.warn("[Auto-Recon] Non-blocking warning:", err.message);
+    });
 
     // Calculate pipelines per cluster worker process
     const pipelinesPerWorker = Math.max(1, Math.ceil(numPipelines / cpuCores));
@@ -1376,9 +1419,7 @@ if (!isPrimaryProcess) {
       });
       app.use(vite.middlewares);
     } else {
-      const distPath = fs.existsSync(path.join(process.cwd(), "dist"))
-        ? path.join(process.cwd(), "dist")
-        : __dirname;
+      const distPath = path.join(process.cwd(), "dist");
       app.use(express.static(distPath));
       app.get("*", (req, res) => {
         res.sendFile(path.join(distPath, "index.html"));

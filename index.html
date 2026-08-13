@@ -100,8 +100,22 @@
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('/sw.js')
-            .then((reg) => console.log('Service Worker registered successfully:', reg.scope))
+            .then((reg) => {
+              // Automatically check for new updates
+              reg.update();
+              
+              document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible') {
+                  reg.update();
+                }
+              });
+            })
             .catch((err) => console.error('Service Worker registration failed:', err));
+        });
+
+        // Listen for controller changes
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          console.log('[SW] Controller changed. Updated to latest version.');
         });
       }
     </script>

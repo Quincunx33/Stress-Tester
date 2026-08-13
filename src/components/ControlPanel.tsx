@@ -1,6 +1,7 @@
 import React from 'react';
-import { Play, Square, Sliders, Globe, Zap, Shield, RefreshCw } from 'lucide-react';
-import { TestConfig } from '../types';
+import { Play, Square, Sliders, Globe, Zap, Shield, RefreshCw, Search, Server } from 'lucide-react';
+import { TestConfig, ServerFingerprint } from '../types';
+import { ServerFingerprintCard } from './ServerFingerprintCard';
 
 interface ControlPanelProps {
   config: TestConfig;
@@ -9,6 +10,10 @@ interface ControlPanelProps {
   onStart: () => void;
   onStop: () => void;
   onRequireDisclaimer: (callback: () => void) => void;
+  fingerprint: ServerFingerprint | null;
+  isReconLoading: boolean;
+  reconError?: string | null;
+  onInspectTarget: (targetOverride?: string) => void;
 }
 
 export function ControlPanel({
@@ -17,7 +22,11 @@ export function ControlPanel({
   isRunning,
   onStart,
   onStop,
-  onRequireDisclaimer
+  onRequireDisclaimer,
+  fingerprint,
+  isReconLoading,
+  reconError,
+  onInspectTarget
 }: ControlPanelProps) {
   const handleChange = (field: keyof TestConfig, value: any) => {
     onChangeConfig({
@@ -33,11 +42,11 @@ export function ControlPanel({
   };
 
   return (
-    <div className="bg-white border-2 border-[#0A0A0A] p-4 sm:p-6 space-y-6 shadow-none">
-      <div className="flex items-center justify-between border-b-2 border-[#0A0A0A] pb-4">
-        <div className="flex items-center space-x-2 text-[#0A0A0A]">
-          <Sliders className="w-5 h-5 text-[#0A0A0A]" />
-          <h2 className="text-xs sm:text-sm font-black uppercase tracking-[0.2em]">Test Configuration</h2>
+    <div className="bg-white dark:bg-[#0E0E0E] border-2 border-[#0A0A0A] dark:border-white p-3.5 sm:p-5 lg:p-6 space-y-4 sm:space-y-6 shadow-none transition-colors w-full min-w-0">
+      <div className="flex items-center justify-between border-b-2 border-[#0A0A0A] dark:border-white pb-3 sm:pb-4">
+        <div className="flex items-center space-x-2 text-[#0A0A0A] dark:text-white">
+          <Sliders className="w-4 h-4 sm:w-5 sm:h-5 text-[#0A0A0A] dark:text-white flex-shrink-0" />
+          <h2 className="text-xs sm:text-sm font-black uppercase tracking-[0.2em] truncate">Test Configuration</h2>
         </div>
       </div>
 
@@ -45,21 +54,46 @@ export function ControlPanel({
         
         {/* Single Universal Target Input Box */}
         <div className="col-span-1 sm:col-span-2 lg:col-span-2 space-y-2">
-          <label className="text-xs font-bold uppercase tracking-widest text-[#0A0A0A] flex items-center space-x-1.5">
-            <Globe className="w-3.5 h-3.5" />
-            <span>Target (URL or IP:Port)</span>
-          </label>
-          <input
-            type="text"
-            disabled={isRunning}
-            value={config.target}
-            onChange={(e) => handleChange('target', e.target.value)}
-            placeholder="http://target.com or 192.168.1.1:8080"
-            className="w-full bg-[#FDFDFD] border-2 border-[#0A0A0A] px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-mono font-bold text-[#0A0A0A] placeholder-slate-400 focus:outline-none focus:bg-white transition-colors disabled:opacity-50"
-          />
+          <div className="flex items-center justify-between">
+            <label className="text-xs font-bold uppercase tracking-widest text-[#0A0A0A] dark:text-white flex items-center space-x-1.5">
+              <Globe className="w-3.5 h-3.5" />
+              <span>Target (URL or IP:Port)</span>
+            </label>
+            <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400">
+              HTTP / HTTPS / Raw IP
+            </span>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-2">
+            <div className="relative flex-1">
+              <input
+                type="text"
+                disabled={isRunning}
+                value={config.target}
+                onChange={(e) => handleChange('target', e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && config.target.trim() && !isReconLoading) {
+                    onInspectTarget();
+                  }
+                }}
+                placeholder="https://target.com or 192.168.1.1:8080"
+                className="w-full bg-[#FDFDFD] dark:bg-[#181818] border-2 border-[#0A0A0A] dark:border-white px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-mono font-bold text-[#0A0A0A] dark:text-white placeholder-slate-400 focus:outline-none focus:bg-white dark:focus:bg-zinc-900 transition-colors disabled:opacity-50"
+              />
+            </div>
+            
+            <button
+              type="button"
+              disabled={isRunning || !config.target || !config.target.trim() || isReconLoading}
+              onClick={() => onInspectTarget()}
+              className="px-4 py-2.5 bg-[#0A0A0A] text-white dark:bg-white dark:text-black font-black uppercase text-xs tracking-wider border-2 border-[#0A0A0A] dark:border-white hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors disabled:opacity-40 flex items-center justify-center space-x-1.5 cursor-pointer flex-shrink-0"
+              title="Identify server technology, WAF, TLS, and headers"
+            >
+              <Search className={`w-3.5 h-3.5 ${isReconLoading ? 'animate-spin' : ''}`} />
+              <span>{isReconLoading ? 'Probing...' : 'Identify Server'}</span>
+            </button>
+          </div>
         </div>
 
-        
         <div className="col-span-1 space-y-2">
           <label className="text-xs font-bold uppercase tracking-widest text-[#0A0A0A] flex items-center justify-between">
             <span>Duration (sec)</span>

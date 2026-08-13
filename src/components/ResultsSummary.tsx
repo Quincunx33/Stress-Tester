@@ -1,6 +1,7 @@
 import React from 'react';
-import { Award, Download, CheckCircle, RefreshCw, BarChart3, ArrowRight, Shield } from 'lucide-react';
+import { Award, Download, CheckCircle, RefreshCw, BarChart3, ArrowRight, Shield, Monitor, Server, HardDrive } from 'lucide-react';
 import { TestState } from '../types';
+import { ServerFingerprintCard } from './ServerFingerprintCard';
 
 interface ResultsSummaryProps {
   state: TestState;
@@ -163,42 +164,70 @@ export function ResultsSummary({ state, onReset }: ResultsSummaryProps) {
   };
 
   return (
-    <div className="bg-white border-2 border-[#0A0A0A] p-6 space-y-6 animate-in fade-in duration-300">
+    <div className="bg-white border-2 border-[#0A0A0A] p-4 sm:p-6 space-y-6 animate-in fade-in duration-300 w-full min-w-0">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between border-b-2 border-[#0A0A0A] pb-4 gap-4">
-        <div className="flex items-center space-x-3 text-[#0A0A0A]">
-          <div className="w-10 h-10 bg-[#00FF00] border-2 border-[#0A0A0A] flex items-center justify-center font-black">
+        <div className="flex items-center space-x-3 text-[#0A0A0A] min-w-0">
+          <div className="w-9 h-9 sm:w-10 sm:h-10 bg-[#00FF00] border-2 border-[#0A0A0A] flex items-center justify-center font-black flex-shrink-0">
             ✓
           </div>
-          <div>
-            <h2 className="text-base font-black uppercase tracking-[0.2em]">Stress Test Report & Summary</h2>
-            <p className="text-xs font-mono font-bold opacity-60">Target: {state.target} • Duration: {state.duration}s</p>
+          <div className="min-w-0">
+            <h2 className="text-sm sm:text-base font-black uppercase tracking-[0.2em] truncate">Stress Test Report & Summary</h2>
+            <p className="text-[11px] sm:text-xs font-mono font-bold opacity-60 truncate">Target: {state.target} • Duration: {state.duration}s</p>
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full md:w-auto">
           <button
             onClick={downloadJson}
-            className="flex items-center space-x-1.5 px-4 py-2 text-xs font-bold uppercase tracking-wider text-[#0A0A0A] bg-white hover:bg-[#0A0A0A] hover:text-white border-2 border-[#0A0A0A] transition-colors cursor-pointer"
+            className="flex-1 sm:flex-initial flex items-center justify-center space-x-1.5 px-3 sm:px-4 py-2 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-[#0A0A0A] bg-white hover:bg-[#0A0A0A] hover:text-white border-2 border-[#0A0A0A] transition-colors cursor-pointer"
           >
             <Download className="w-3.5 h-3.5" />
             <span>Export JSON</span>
           </button>
           <button
             onClick={downloadCsv}
-            className="flex items-center space-x-1.5 px-4 py-2 text-xs font-bold uppercase tracking-wider text-[#0A0A0A] bg-white hover:bg-[#0A0A0A] hover:text-white border-2 border-[#0A0A0A] transition-colors cursor-pointer"
+            className="flex-1 sm:flex-initial flex items-center justify-center space-x-1.5 px-3 sm:px-4 py-2 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-[#0A0A0A] bg-white hover:bg-[#0A0A0A] hover:text-white border-2 border-[#0A0A0A] transition-colors cursor-pointer"
           >
             <Download className="w-3.5 h-3.5" />
             <span>Export CSV</span>
           </button>
           <button
             onClick={onReset}
-            className="flex items-center space-x-1.5 px-5 py-2 text-xs font-black uppercase tracking-wider text-white bg-[#0A0A0A] hover:bg-white hover:text-[#0A0A0A] border-2 border-[#0A0A0A] transition-colors cursor-pointer"
+            className="w-full sm:w-auto flex items-center justify-center space-x-1.5 px-4 sm:px-5 py-2 text-[11px] sm:text-xs font-black uppercase tracking-wider text-white bg-[#0A0A0A] hover:bg-white hover:text-[#0A0A0A] border-2 border-[#0A0A0A] transition-colors cursor-pointer"
           >
             <RefreshCw className="w-3.5 h-3.5" />
             <span>New Test</span>
           </button>
         </div>
       </div>
+
+      {/* Identified Target Server & Reconnaissance Card in Results */}
+      {state.fingerprint ? (
+        <ServerFingerprintCard
+          fingerprint={state.fingerprint}
+          isLoading={false}
+        />
+      ) : (
+        <div className="bg-[#F8F9FA] dark:bg-[#121212] border-2 border-[#0A0A0A] dark:border-white p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs font-mono">
+          <div className="flex items-center space-x-3">
+            <div className="p-2 bg-[#0A0A0A] text-white dark:bg-white dark:text-black">
+              <Monitor className="w-4 h-4" />
+            </div>
+            <div>
+              <span className="font-bold text-[#0A0A0A] dark:text-white uppercase tracking-wider block">Target Host Telemetry</span>
+              <span className="text-slate-600 dark:text-slate-400">{state.target}</span>
+            </div>
+          </div>
+          <div className="flex items-center space-x-2 text-[11px]">
+            <span className="px-2 py-1 bg-emerald-100 text-emerald-900 border border-emerald-500 font-bold uppercase">
+              Protocol: {state.protocol.toUpperCase()}
+            </span>
+            <span className="px-2 py-1 bg-blue-100 text-blue-900 border border-blue-500 font-bold uppercase">
+              Pipelines: {state.pipelines}x{state.pipeliningFactor}
+            </span>
+          </div>
+        </div>
+      )}
 
       {state.securityStats && (
         <div className="bg-[#FFF8F0] border-2 border-[#0A0A0A] p-5 space-y-4">

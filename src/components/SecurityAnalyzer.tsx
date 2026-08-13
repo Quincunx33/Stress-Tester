@@ -2,6 +2,7 @@
 import React from 'react';
 import { Shield, AlertTriangle, CheckCircle } from 'lucide-react';
 import { SecurityStats } from '../security-payloads';
+import securityRadarArt from '../assets/images/security_radar_art_1786655110524.jpg';
 
 interface SecurityAnalyzerProps {
   stats?: SecurityStats;
@@ -19,24 +20,33 @@ export function SecurityAnalyzer({ stats, testMode, intensity, payloadType }: Se
   const blockRate = total > 0 ? Math.round((blocked / total) * 100) : 0;
 
   return (
-    <div className="bg-[#FFF8F0] border-2 border-[#0A0A0A] p-4 sm:p-6 space-y-4">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-[#0A0A0A]/20 pb-3 gap-2">
-        <div className="flex items-center space-x-2">
-          <Shield className="w-5 h-5 text-amber-700" />
-          <h3 className="text-xs font-black uppercase tracking-[0.2em] text-[#0A0A0A]">
-            WAF / Security Payload Analyzer
-          </h3>
-        </div>
-        <div className="flex flex-wrap items-center gap-2 text-xs font-mono">
-          <span className="px-2 py-1 bg-amber-700 text-white font-bold">
-            MODE: {testMode?.toUpperCase()}
-          </span>
-          <span className="px-2 py-1 bg-[#0A0A0A] text-white font-bold">
-            INTENSITY: {intensity || 5}/10
-          </span>
-          <span className="px-2 py-1 bg-purple-700 text-white font-bold">
-            {payloadType?.toUpperCase() || 'ALL'}
-          </span>
+    <div className="bg-[#FFF8F0] dark:bg-[#181512] border-2 border-[#0A0A0A] dark:border-white p-4 sm:p-6 space-y-4">
+      {/* Visual Image Banner for Security Analyzer */}
+      <div className="relative h-28 sm:h-32 border-2 border-[#0A0A0A] dark:border-white overflow-hidden bg-black">
+        <img
+          src={securityRadarArt}
+          alt="Cyber Security Radar Monitor"
+          className="w-full h-full object-cover object-center opacity-85"
+          referrerPolicy="no-referrer"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent p-4 flex flex-col justify-between">
+          <div className="flex items-center space-x-2">
+            <Shield className="w-5 h-5 text-amber-400" />
+            <h3 className="text-xs sm:text-sm font-black uppercase tracking-[0.2em] text-white">
+              WAF / Security Payload Radar
+            </h3>
+          </div>
+          <div className="flex flex-wrap items-center gap-2 text-xs font-mono">
+            <span className="px-2 py-0.5 bg-amber-400 text-black font-black uppercase text-[10px]">
+              MODE: {testMode?.toUpperCase()}
+            </span>
+            <span className="px-2 py-0.5 bg-black text-white border border-white/30 font-bold text-[10px]">
+              INTENSITY: {intensity || 5}/10
+            </span>
+            <span className="px-2 py-0.5 bg-purple-600 text-white font-bold text-[10px]">
+              {payloadType?.toUpperCase() || 'ALL'}
+            </span>
+          </div>
         </div>
       </div>
 

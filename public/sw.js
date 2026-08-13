@@ -1,23 +1,31 @@
 const CACHE_NAME = 'xio-stress-v2';
 const STATIC_ASSETS = [
+  '/',
+  '/index.html',
   '/favicon.svg',
   '/manifest.json'
 ];
 
+// Install: pre-cache core shell & skip waiting immediately
 self.addEventListener('install', (event) => {
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(STATIC_ASSETS);
-    }).then(() => self.skipWaiting())
+      return cache.addAll(STATIC_ASSETS).catch((err) => {
+        console.warn('[SW] Pre-cache warning:', err);
+      });
+    })
   );
 });
 
+// Activate: clean up ALL old caches and claim existing clients immediately
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
       return Promise.all(
         keys.map((key) => {
           if (key !== CACHE_NAME) {
+            console.log('[SW] Deleting stale cache:', key);
             return caches.delete(key);
           }
         })
@@ -26,47 +34,60 @@ self.addEventListener('activate', (event) => {
   );
 });
 
+// Fetch: Pure Network-First strategy with fallback
 self.addEventListener('fetch', (event) => {
-  // Only handle GET requests from the same origin
-  if (event.request.method !== 'GET' || !event.request.url.startsWith(self.location.origin)) {
+  const url = new URL(event.request.url);
+
+  // 1. Never intercept non-GET requests
+  if (event.request.method !== 'GET') {
     return;
   }
 
-  // Never cache API or SSE streams
-  if (event.request.url.includes('/api/')) {
+  // 2. Never intercept or cache API endpoints or SSE streams
+  if (url.pathname.startsWith('/api/') || url.pathname.includes('/stream')) {
     return;
   }
 
-  // Network-first for navigation / HTML documents to avoid stale bundle mismatches
-  if (event.request.mode === 'navigate' || event.request.destination === 'document') {
-    event.respondWith(
-      fetch(event.request)
-        .then((response) => {
-          if (response && response.status === 200) {
-            const responseClone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(event.request, responseClone);
-            });
-          }
-          return response;
-        })
-        .catch(() => caches.match(event.request))
-    );
+  // 3. Never intercept Vite development endpoints / modules
+  if (
+    url.pathname.startsWith('/@') ||
+    url.pathname.startsWith('/src/') ||
+    url.pathname.startsWith('/node_modules/') ||
+    url.searchParams.has('t') ||
+    url.searchParams.has('import')
+  ) {
     return;
   }
 
-  // For static assets: try network first, then cache
+  // 4. Network-First for everything else
   event.respondWith(
     fetch(event.request)
-      .then((response) => {
-        if (response && response.status === 200 && response.type === 'basic') {
-          const responseClone = response.clone();
+      .then((networkResponse) => {
+        // If response is valid, update the cache in the background
+        if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
+          const responseToCache = networkResponse.clone();
           caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseClone);
+            cache.put(event.request, responseToCache);
           });
         }
-        return response;
+        return networkResponse;
       })
-      .catch(() => caches.match(event.request))
+      .catch(async () => {
+        // Offline Fallback: Serve from cache only if network fails
+        const cached = await caches.match(event.request);
+        if (cached) {
+          return cached;
+        }
+
+        // If navigation request (page refresh while offline), return root index.html
+        if (event.request.mode === 'navigate') {
+          return (await caches.match('/index.html')) || (await caches.match('/'));
+        }
+
+        return new Response('Network offline and asset not in cache', {
+          status: 503,
+          statusText: 'Service Unavailable'
+        });
+      })
   );
 });

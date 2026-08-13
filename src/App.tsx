@@ -4,13 +4,18 @@ import { ControlPanel } from './components/ControlPanel';
 import { LiveDashboard } from './components/LiveDashboard';
 import { SecurityAnalyzer } from './components/SecurityAnalyzer';
 import { ResultsSummary } from './components/ResultsSummary';
+import { ServerFingerprintCard } from './components/ServerFingerprintCard';
 import { DisclaimerModal } from './components/DisclaimerModal';
-import { TestConfig, TestState } from './types';
+import { TestConfig, TestState, ServerFingerprint } from './types';
 
 export default function App() {
   const [theme, setTheme] = useState<'light' | 'dark' | 'system'>(() => {
     return (localStorage.getItem('theme') as 'light' | 'dark' | 'system') || 'system';
   });
+
+  const [fingerprint, setFingerprint] = useState<ServerFingerprint | null>(null);
+  const [isReconLoading, setIsReconLoading] = useState<boolean>(false);
+  const [reconError, setReconError] = useState<string | null>(null);
 
   useEffect(() => {
     const root = window.document.documentElement;
@@ -101,6 +106,9 @@ export default function App() {
           try {
             const data = JSON.parse(event.data);
             setTestState(data);
+            if (data.fingerprint && !fingerprint) {
+              setFingerprint(data.fingerprint);
+            }
           } catch (e) {
             console.error('SSE JSON parse error:', e);
           }
@@ -196,6 +204,40 @@ export default function App() {
     setPendingAction(null);
   };
 
+  const handleInspectTarget = async (targetOverride?: string) => {
+    const targetToInspect = (targetOverride !== undefined ? targetOverride : config.target).trim();
+    if (!targetToInspect) {
+      setReconError('Please enter a target URL or IP address first.');
+      return;
+    }
+
+    setIsReconLoading(true);
+    setReconError(null);
+
+    try {
+      const res = await fetch('/api/recon', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ target: targetToInspect })
+      });
+
+      const data = await res.json();
+      if (data.success && data.fingerprint) {
+        setFingerprint(data.fingerprint);
+        if (targetOverride) {
+          setConfig(prev => ({ ...prev, target: targetOverride }));
+        }
+      } else {
+        setReconError(data.error || 'Unable to identify server. Please verify the host address.');
+      }
+    } catch (e: any) {
+      console.error(e);
+      setReconError(`Failed to reach server reconnaissance engine: ${e.message || 'Network error'}`);
+    } finally {
+      setIsReconLoading(false);
+    }
+  };
+
   const handleReset = () => {
     setTestState(prev => ({ ...prev, running: false, totalRequests: 0, logs: [], history: [] }));
   };
@@ -225,6 +267,17 @@ export default function App() {
           </div>
         )}
 
+        {/* Server Reconnaissance / Identification Results Card placed at the TOP, above Test Configuration */}
+        {(fingerprint || testState.fingerprint || isReconLoading || reconError) && (
+          <ServerFingerprintCard
+            fingerprint={fingerprint || testState.fingerprint || null}
+            isLoading={isReconLoading}
+            error={reconError}
+            onRefresh={() => handleInspectTarget()}
+            onSelectProtocol={(p) => setConfig(prev => ({ ...prev, protocol: p }))}
+          />
+        )}
+
         <ControlPanel
           config={config}
           onChangeConfig={setConfig}
@@ -232,6 +285,10 @@ export default function App() {
           onStart={handleStartTest}
           onStop={handleStopTest}
           onRequireDisclaimer={handleRequireDisclaimer}
+          fingerprint={fingerprint}
+          isReconLoading={isReconLoading}
+          reconError={reconError}
+          onInspectTarget={handleInspectTarget}
         />
 
         <LiveDashboard state={testState} />
