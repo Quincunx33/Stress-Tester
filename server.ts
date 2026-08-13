@@ -1,5 +1,6 @@
 import express from "express";
 import path from "path";
+import fs from "fs";
 import http from "http";
 import https from "https";
 import http2 from "http2";
@@ -163,7 +164,7 @@ const PRESET_TARGETS = [
   { name: "Cloudflare Speed Test", url: "https://speed.cloudflare.com/__down?bytes=1000", pipelines: 20, duration: 30, factor: 10 }
 ];
 
-const PORT = 3000;
+const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 const isPrimaryProcess = cluster.isPrimary || (cluster as any).isMaster;
 
 // ==========================================
@@ -799,8 +800,9 @@ if (!isPrimaryProcess) {
   const app = express();
   app.use(express.json({ limit: "5mb" }));
 
-  // Fork Cluster Workers
-  const cpuCores = Math.max(1, os.cpus().length || 4);
+  // Fork Cluster Workers (respect WEB_CONCURRENCY on PaaS / Render to prevent OOM)
+  const envConcurrency = process.env.WEB_CONCURRENCY ? parseInt(process.env.WEB_CONCURRENCY, 10) : undefined;
+  const cpuCores = Math.max(1, Math.min(envConcurrency || (process.env.NODE_ENV === 'production' ? Math.min(os.cpus().length || 1, 4) : 2), 8));
   const workers: Record<number, any> = {};
 
   console.log(`[Primary Process PID ${process.pid}] Forking ${cpuCores} Cluster Workers for high-throughput load generation...`);
@@ -1374,7 +1376,9 @@ if (!isPrimaryProcess) {
       });
       app.use(vite.middlewares);
     } else {
-      const distPath = path.join(process.cwd(), "dist");
+      const distPath = fs.existsSync(path.join(process.cwd(), "dist"))
+        ? path.join(process.cwd(), "dist")
+        : __dirname;
       app.use(express.static(distPath));
       app.get("*", (req, res) => {
         res.sendFile(path.join(distPath, "index.html"));
