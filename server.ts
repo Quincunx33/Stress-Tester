@@ -1223,13 +1223,24 @@ if (!isPrimaryProcess) {
 
     let formattedTarget = target.trim();
     if (!formattedTarget.startsWith("http://") && !formattedTarget.startsWith("https://")) {
-      formattedTarget = "https://" + formattedTarget;
+      // Intelligently detect if it's an IP, localhost, or standard HTTP port
+      const isIpOrHttpPort = /^(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|localhost|127\.0\.0\.1|\[[0-9a-fA-F:]+\])(:\d+)?(\/.*)?$/i.test(formattedTarget) ||
+                             /:(80|8080|3000|5000|8000|8888)(\/|$)/.test(formattedTarget);
+      const isHttpsPort = /:(443|8443)(\/|$)/.test(formattedTarget);
+      
+      if (isHttpsPort) {
+        formattedTarget = "https://" + formattedTarget;
+      } else if (isIpOrHttpPort) {
+        formattedTarget = "http://" + formattedTarget;
+      } else {
+        formattedTarget = "https://" + formattedTarget;
+      }
     }
 
     try {
       new URL(formattedTarget);
     } catch (err) {
-      return res.status(400).json({ error: "Invalid URL format. Please enter a valid URL (e.g. https://example.com)." });
+      return res.status(400).json({ error: "Invalid URL or IP:Port format. Please enter a valid address (e.g. 192.168.1.1:8080 or https://example.com)." });
     }
 
     const numPipelines = Math.max(1, Math.min(Number(pipelines) || 15, 500));

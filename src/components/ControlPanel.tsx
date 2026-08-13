@@ -26,6 +26,7 @@ export function ControlPanel({
       .then(res => res.json())
       .then(data => {
         if (data.presets) setPresets(data.presets);
+        else if (Array.isArray(data)) setPresets(data);
       })
       .catch(() => {});
   }, []);
@@ -77,19 +78,26 @@ export function ControlPanel({
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         
+        {/* Single Universal Target Input Box */}
         <div className="col-span-1 sm:col-span-2 lg:col-span-2 space-y-2">
-          <label className="text-xs font-bold uppercase tracking-widest text-[#0A0A0A] flex items-center space-x-1.5">
-            <Globe className="w-3.5 h-3.5" />
-            <span>Target URL</span>
-          </label>
+          <div className="flex items-center justify-between">
+            <label className="text-xs font-bold uppercase tracking-widest text-[#0A0A0A] flex items-center space-x-1.5">
+              <Globe className="w-3.5 h-3.5" />
+              <span>Target (URL or IP:Port)</span>
+            </label>
+            <span className="text-[10px] font-mono text-slate-500 font-bold uppercase">
+              e.g. 192.168.1.1:8080 or https://site.com
+            </span>
+          </div>
           <input
             type="text"
             disabled={isRunning}
             value={config.target}
             onChange={(e) => handleChange('target', e.target.value)}
-            placeholder="http://target-domain.com"
+            placeholder="http://domain.com or 192.168.1.1:8080"
             className="w-full bg-[#FDFDFD] border-2 border-[#0A0A0A] px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-mono font-bold text-[#0A0A0A] placeholder-slate-400 focus:outline-none focus:bg-white transition-colors disabled:opacity-50"
           />
+
           {presets.length > 0 && (
             <div className="flex flex-wrap gap-1.5 pt-1.5">
               <span className="text-[10px] font-bold uppercase text-[#0A0A0A]/60 self-center">Quick Targets:</span>

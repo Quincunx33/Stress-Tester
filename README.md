@@ -139,20 +139,31 @@ For enterprise-grade throughput and uninterrupted high-volume network card bench
 
 ## 🚀 iSH & Mobile Optimized (NEW)
 
-This version of XIO Stress Tester has been specially optimized for **iSH Shell** on iPad/iPhone. It includes:
+This version of XIO Stress Tester has been specially optimized for **iSH Shell (Alpine Linux 3.14)** on iPad/iPhone. It includes:
+* **Alpine Linux 3.14 Compatibility**: Optimized for standard Alpine 3.14 environment on iSH.
 * **Zero-Dependency Bundle**: A single `server.js` file that contains all necessary libraries. No `npm install` required on iSH!
 * **x86 Emulation Fixes**: Optimized for the 32-bit x86 emulation layer in iSH.
 * **AbortController Polyfill**: Full support for older Node.js versions (v14+).
 * **HTTP/3 Disabled for Stability**: Removed native http3 bindings to prevent Segmentation Faults on mobile.
 
 ### 📱 How to use on iSH (iPad/iPhone)
-1. Download the `Stress-Tester-iSH-ULTIMATE-v2.zip` from the [Releases](https://github.com/Quincunx33/Stress-Tester/releases) section.
+
+#### Step 1: Prepare Environment (Alpine Linux 3.14)
+Open your iSH app and install Node.js & npm:
+```bash
+apk update
+apk add nodejs npm
+```
+
+#### Step 2: Run Stress Tester
+1. Download `Stress-Tester-iSH-ULTIMATE-v2.zip` from the [Releases](https://github.com/Quincunx33/Stress-Tester/releases) section (or clone the repository).
 2. Unzip the file in your iSH home directory.
 3. Run the server using the provided script:
    ```bash
    sh start.sh
    ```
-4. Access the dashboard at `http://localhost:3000`.
+   *(Or run directly with `node server.js` / `npm start`)*
+4. Access the dashboard in Safari at `http://localhost:3000`.
 
 ---
 
