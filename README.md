@@ -66,8 +66,8 @@ Google Cloud Shell is a free browser-based VM with all development runtimes prel
 3. Execute the commands below to pull, build, and launch the engine:
    ```bash
    # Clone the code suite
-   git clone https://github.com/Quincunx33/Pipeline-Stress-Tester.git
-   cd Pipeline-Stress-Tester
+   git clone https://github.com/Quincunx33/Stress-Tester.git
+   cd Stress-Tester
 
    # Install optimized node modules
    npm install
@@ -127,8 +127,8 @@ For enterprise-grade throughput and uninterrupted high-volume network card bench
    ```
 4. Clone, build, and run continuously in the background using PM2:
    ```bash
-   git clone https://github.com/Quincunx33/Pipeline-Stress-Tester.git
-   cd Pipeline-Stress-Tester
+   git clone https://github.com/Quincunx33/Stress-Tester.git
+   cd Stress-Tester
    npm install
    npm run build
    pm2 start dist/server.cjs --name stress-tester
@@ -173,10 +173,10 @@ Get up and running locally in seconds.
 
 ```bash
 # 1. Clone repository
-git clone https://github.com/Quincunx33/Pipeline-Stress-Tester.git
+git clone https://github.com/Quincunx33/Stress-Tester.git
 
 # 2. Open directory and install dependencies
-cd Pipeline-Stress-Tester
+cd Stress-Tester
 npm install
 
 # 3. Boot dev environment (Vite hot-reloading + Express server)
